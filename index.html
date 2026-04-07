@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Form Pemesanan Pengusir Semut</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+font-family:'Segoe UI', Arial, sans-serif;
+background: linear-gradient(135deg,#56ab2f,#a8e063);
+margin:0;
+}
+
+.container{
+max-width:480px;
+margin:auto;
+padding:20px 12px 40px;
+}
+
+.box{
+background:white;
+padding:20px 16px;
+border-radius:18px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+}
+
+.title{
+font-size:20px;
+font-weight:700;
+text-align:center;
+}
+
+.subtitle{
+text-align:center;
+font-size:13px;
+color:#777;
+margin-bottom:15px;
+}
+
+.product{
+display:flex;
+gap:10px;
+align-items:center;
+padding:10px;
+border-radius:12px;
+background:#f5f6f8;
+margin-bottom:10px;
+}
+
+.product img{
+width:55px;
+height:55px;
+border-radius:10px;
+object-fit:cover;
+cursor:pointer;
+}
+
+.product-info{
+flex:1;
+}
+
+.product-title{
+font-size:14px;
+font-weight:600;
+}
+
+.product-price{
+font-size:12px;
+color:#888;
+}
+
+.product input{
+width:50px;
+padding:7px;
+border-radius:8px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+input, select, textarea{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:14px;
+background:#fafafa;
+box-sizing:border-box;
+}
+
+.summary{
+background:#f9fafc;
+padding:14px;
+border-radius:12px;
+margin-top:18px;
+font-size:14px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+margin-bottom:6px;
+}
+
+.total{
+font-weight:700;
+font-size:15px;
+}
+
+.green{
+color:#25D366;
+font-weight:600;
+font-size:13px;
+}
+
+.strike{
+text-decoration:line-through;
+color:#999;
+}
+
+button{
+margin-top:18px;
+width:100%;
+padding:14px;
+background: linear-gradient(135deg,#25D366,#128C7E);
+border:none;
+color:white;
+font-weight:600;
+border-radius:12px;
+font-size:15px;
+}
+
+/* POPUP GAMBAR */
+.modal{
+display:none;
+position:fixed;
+z-index:999;
+padding-top:60px;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+}
+
+.modal img{
+margin:auto;
+display:block;
+max-width:90%;
+max-height:80%;
+border-radius:12px;
+}
+
+.close{
+position:absolute;
+top:20px;
+right:25px;
+color:white;
+font-size:28px;
+font-weight:bold;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="box">
+
+<div class="title">Form Pemesanan<br>Pengusir Semut</div>
+<div class="subtitle">🔥 Promo Hari Ini - Gratis Ongkir!</div>
+
+<form id="formPesanan">
+
+<!-- PRODUK -->
+<div class="product">
+<img src="pengusir_semut.png" onclick="bukaGambar(this.src)">
+<div class="product-info">
+<div class="product-title">Pengusir Semut Ampuh</div>
+<div class="product-price">1 pcs Rp119.000 | 2 pcs Rp189.000</div>
+</div>
+<input type="number" id="qty" value="0" min="0" onchange="hitung()">
+</div>
+
+<!-- FORM -->
+<select id="pembayaran">
+<option value="">Metode Pembayaran</option>
+<option value="COD">COD</option>
+<option value="Transfer">Transfer</option>
+</select>
+
+<input type="text" id="nama" placeholder="Nama Penerima">
+<input type="text" id="jalan" placeholder="Nama Jalan">
+<input type="number" id="rt" placeholder="RT">
+<input type="number" id="rumah" placeholder="No Rumah">
+<input type="text" id="kelurahan" placeholder="Kelurahan/Desa">
+<input type="text" id="kecamatan" placeholder="Kecamatan">
+<input type="text" id="kota" placeholder="Kota">
+<input type="text" id="provinsi" placeholder="Provinsi">
+<textarea id="catatan" placeholder="Catatan Rumah"></textarea>
+
+<!-- SUMMARY -->
+<div class="summary" id="summaryBox" style="display:none;">
+
+<div class="row">
+<span>Subtotal</span>
+<span id="subtotal">Rp0</span>
+</div>
+
+<div class="row">
+<span>Diskon</span>
+<span class="green" id="diskon">Rp0</span>
+</div>
+
+<div class="row">
+<span>Ongkir</span>
+<span><span class="strike">Rp25.000</span> Gratis</span>
+</div>
+
+<div class="row total">
+<span>Total</span>
+<span id="total">Rp0</span>
+</div>
+
+<div class="green" id="hemat"></div>
+
+</div>
+
+<button type="button" onclick="kirim()">Kirim Pesanan</button>
+
+</form>
+
+</div>
+</div>
+
+<!-- MODAL GAMBAR -->
+<div id="modalGambar" class="modal" onclick="tutupGambar()">
+<span class="close">&times;</span>
+<img id="imgModal">
+</div>
+
+<script>
+
+var harga1=119000;
+var harga2=189000;
+var ongkir=25000;
+
+function hitung(){
+
+var qty=parseInt(document.getElementById("qty").value)||0;
+
+if(qty==0){
+document.getElementById("summaryBox").style.display="none";
+return;
+}
+
+document.getElementById("summaryBox").style.display="block";
+
+var pasangan=Math.floor(qty/2);
+var sisa=qty%2;
+
+var total=(pasangan*harga2)+(sisa*harga1);
+var subtotal=qty*harga1;
+var diskon=subtotal-total;
+var hemat=diskon+ongkir;
+
+document.getElementById("subtotal").innerText="Rp"+subtotal.toLocaleString("id-ID");
+document.getElementById("diskon").innerText="- Rp"+diskon.toLocaleString("id-ID");
+document.getElementById("total").innerText="Rp"+total.toLocaleString("id-ID");
+document.getElementById("hemat").innerText="Kamu hemat Rp"+hemat.toLocaleString("id-ID");
+
+}
+
+function kirim(){
+
+var qty=parseInt(document.getElementById("qty").value)||0;
+
+if(qty==0){
+alert("Isi jumlah dulu 😊");
+return;
+}
+
+var pembayaran=document.getElementById("pembayaran").value;
+if(pembayaran==""){
+alert("Pilih pembayaran 😊");
+return;
+}
+
+var nama=document.getElementById("nama").value;
+var jalan=document.getElementById("jalan").value;
+var rt=document.getElementById("rt").value;
+var rumah=document.getElementById("rumah").value;
+var kel=document.getElementById("kelurahan").value;
+var kec=document.getElementById("kecamatan").value;
+var kota=document.getElementById("kota").value;
+var prov=document.getElementById("provinsi").value;
+var catatan=document.getElementById("catatan").value;
+
+if(nama==""||jalan==""||rt==""||rumah==""||kel==""||kec==""||kota==""||prov==""||catatan==""){
+alert("Lengkapi alamat 😊");
+return;
+}
+
+var pasangan=Math.floor(qty/2);
+var sisa=qty%2;
+var total=(pasangan*harga2)+(sisa*harga1);
+
+var pesan=
+"Halo kak, saya ingin pesan Pengusir Semut.%0A%0A"+
+"*Nama:* "+nama+"%0A%0A"+
+"*Alamat:*%0A"+
+jalan+" RT."+rt+" No."+rumah+"%0A"+
+"("+catatan+")%0A"+
+kel+", "+kec+"%0A"+
+kota+", "+prov+"%0A%0A"+
+"*Jumlah:* "+qty+" pcs%0A"+
+"*Pembayaran:* "+pembayaran+"%0A"+
+"Ongkir: _*Rp0*_%0A"+
+"*Total:* Rp"+total.toLocaleString("id-ID")+"%0A%0A"+
+"Mohon diproses ya 🙏";
+
+window.location.href="https://api.whatsapp.com/send?phone=15558770694&text="+pesan;
+}
+
+/* ZOOM GAMBAR */
+function bukaGambar(src){
+document.getElementById("modalGambar").style.display="block";
+document.getElementById("imgModal").src=src;
+}
+
+function tutupGambar(){
+document.getElementById("modalGambar").style.display="none";
+}
+
+</script>
+
+</body>
+</html>
